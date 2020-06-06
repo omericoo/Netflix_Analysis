@@ -166,9 +166,9 @@ def create_doc():
     paragraph_format.line_spacing = 1.75
     p.add_run('You have ditched ')
     p.add_run(str(left(df))).bold = True
-    p.add_run(' shows.')
+    p.add_run(' shows after one day.')
 
-    # document.add_picture('then_VS_now.jpeg', width=Cm(6.7), height=Cm(4.1))
+   
     document.add_picture('View_day.jpeg', width=Cm(6.7), height=Cm(4.1))
     document.add_picture('PieChart.jpeg', width=Cm(6.7), height=Cm(4.1))
     p = document.add_paragraph()
