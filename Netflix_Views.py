@@ -101,7 +101,8 @@ def views_by_day(df):
 
 
 def create_pie(Count):
-
+    
+    plt.clf()
     plt.style.use("seaborn-poster")
 
     labels = ['Series', 'Movies']
