@@ -115,6 +115,33 @@ def create_pie(Count):
     # plt.tight_layout()
     plt.savefig('PieChart.jpeg')
 
+def ten(df):
+
+    plt.clf()
+    plt.style.use("seaborn-poster")
+        
+    table = df.groupby(['Name'], as_index=True).agg(
+        Episodes=('Title', 'count'))
+    table = table['Episodes'].nlargest(10)
+    table = table.reset_index()
+
+    names = [i for i in table['Name']]
+    eps = [j for j in table['Episodes']]
+
+    names.reverse()
+    eps.reverse()
+
+    plt.barh(names, eps, height=0.7, color='#B21018', edgecolor='black')
+
+    plt.title('10 Longest Shows')
+    
+    plt.xlabel('Number Of Episodes')
+    
+    plt.tight_layout()
+    
+    plt.savefig('10shows.jpeg')
+    
+    
 def create_doc():
 
     document = Document()
@@ -170,9 +197,9 @@ def create_doc():
     p.add_run(' shows after one day.')
 
    
-    document.add_picture('View_day.jpeg', width=Cm(6.7), height=Cm(4.1))
-    document.add_picture('PieChart.jpeg', width=Cm(6.7), height=Cm(4.1))
-    p = document.add_paragraph()
+    document.add_picture('10shows.jpeg', width=Cm(6.5), height=Cm(4.1))
+    document.add_picture('PieChart.jpeg', width=Cm(6.5), height=Cm(4.1))
+    document.add_picture('View_day.jpeg', width=Cm(6.5), height=Cm(4.1))
 
     document.save('Netflix_Analysis.docx')
 
@@ -185,6 +212,7 @@ if __name__ == '__main__':
     left(df)
 
     views_by_day(df)
+    ten(df)
     create_pie(Count)
 
     create_doc()
