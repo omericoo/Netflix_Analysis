@@ -12,6 +12,8 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
 from docx.shared import RGBColor, Pt, Length
 from docx.enum.style import WD_STYLE
 
+def requirements():
+    os.system('pip install pandas matplotlib python-docx')
 
 def data_cleaning():
 
@@ -206,6 +208,8 @@ def create_doc():
 
 if __name__ == '__main__':
 
+    requirements()
+    
     df, Count = data_cleaning()
 
     Netflix_time(df)
