@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from collections import Counter
 import re
 import os
@@ -77,9 +77,20 @@ def left(df):
         show[t] += 1
 
     ditched = []
+
     for t in df['Name']:
+
         if show[t] == 1:
             ditched.append(t)
+
+    diff_4w = (datetime.today() - timedelta(weeks = 4))
+
+    for i in ditched:
+        for x in df.loc[df['Name'] == i, 'Date']:
+            x = x.to_pydatetime()
+            if x >= diff_4w:
+                ditched.remove(i)
+            pass
 
     return len(ditched)
 
