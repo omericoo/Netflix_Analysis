@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 from datetime import datetime, date, timedelta
 from collections import Counter
 import re
@@ -13,8 +14,8 @@ from docx.shared import RGBColor, Pt, Length
 from docx.enum.style import WD_STYLE
 
 def requirements():
-    os.system('pip install pandas matplotlib python-docx')
-
+    os.system('pip install pandas matplotlib python-docx seaborn numpy')
+    
 def data_cleaning():
 
     def load():
@@ -22,7 +23,6 @@ def data_cleaning():
         def d_parser(x): return datetime.strptime(x, '%d/%m/%Y')
         df = pd.read_csv('NetflixViewingHistory.csv', parse_dates=[
                          'Date'], date_parser=d_parser)
-
         return df
 
     df = load()
@@ -72,6 +72,8 @@ def Netflix_time(df):
 # There is must be a better way to do it, but for now this works.
 def left(df):
 
+    diff_2w = (datetime.today() - timedelta(weeks=3))
+
     show = Counter()
     for t in df['Name']:
         show[t] += 1
@@ -83,16 +85,17 @@ def left(df):
         if show[t] == 1:
             ditched.append(t)
 
-    diff_4w = (datetime.today() - timedelta(weeks = 4))
+    diff_2w = (datetime.today() - timedelta(weeks=4))
 
     for i in ditched:
         for x in df.loc[df['Name'] == i, 'Date']:
             x = x.to_pydatetime()
-            if x >= diff_4w:
+            if x >= diff_2w:
                 ditched.remove(i)
             pass
 
     return len(ditched)
+
 
 def views_by_day(df):
 
@@ -101,10 +104,10 @@ def views_by_day(df):
                 'Wednesday', 'Thursday', 'Friday', 'Saturday']
     day_vals = [day_grp.get_group(day).count()[0] for day in weekDays]
 
-    plt.style.use('seaborn-poster')
+    plt.style.use('ggplot')
 
-    plt.bar(weekDays, day_vals, width=0.45, align='center',
-            color='#A61919', edgecolor='#FFFFFF')
+    plt.bar(weekDays, day_vals, width=0.53, align='center',
+            color='#444444', edgecolor='#FFFFFF')
     plt.title('Total Views By Day')
     plt.ylabel('Views')
 
@@ -114,7 +117,7 @@ def views_by_day(df):
 
 
 def create_pie(Count):
-    
+
     plt.clf()
     plt.style.use("seaborn-poster")
 
@@ -122,17 +125,23 @@ def create_pie(Count):
     # in order to emphasize one piece on the chart.
     explode = [0, 0.1]
 
-    plt.pie(Count, labels=labels, colors=(['#444444', '#B21010']), explode=explode, shadow=True, autopct='%1.1f%%',
-            startangle=90, wedgeprops={'edgecolor': 'black'})
+    plt.pie(Count,
+            labels=labels,
+            colors=(['#444444', '#B21010']),
+            explode=explode, shadow=True, autopct='%1.1f%%',
+            startangle=90,
+            wedgeprops={'edgecolor': 'black'})
 
-    # plt.tight_layout()
+    plt.tight_layout()
     plt.savefig('PieChart.jpeg')
+
 
 def ten(df):
 
     plt.clf()
-    plt.style.use("seaborn-poster")
-        
+
+    plt.style.use("ggplot")
+
     table = df.groupby(['Name'], as_index=True).agg(
         Episodes=('Title', 'count'))
     table = table['Episodes'].nlargest(10)
@@ -147,12 +156,31 @@ def ten(df):
     plt.barh(names, eps, height=0.7, color='#B21018', edgecolor='black')
 
     plt.title('10 Longest Shows')
-    
+
     plt.xlabel('Number Of Episodes')
-    
+
     plt.tight_layout()
-    
+
     plt.savefig('10shows.jpeg')
+
+def heat_map(df):
+
+    plt.clf()
+
+    month_names = ['January', 'February', 'March', 'April', 'May', 'June',
+                   'July', 'August', 'September', 'October', 'November', 'December']
+
+    df_mnth = df.groupby(['Year', 'Month'], as_index=False).agg(
+        {'Title': 'count'})
+    df_mnth = df_mnth.pivot_table(
+        index='Month', columns='Year', values='Title', fill_value=0).reindex(month_names)
+
+    ax = sns.heatmap(df_mnth, cmap="Reds", annot=True, fmt="d", cbar=False)
+
+    fig = ax.get_figure()
+
+    fig.savefig('heatmap.jpeg')
+
     
     
 def create_doc():
@@ -207,12 +235,13 @@ def create_doc():
     paragraph_format.line_spacing = 1.75
     p.add_run('You have ditched ')
     p.add_run(str(left(df))).bold = True
-    p.add_run(' shows after one day.')
+    p.add_run(' shows after one episode.')
 
-   
-    document.add_picture('10shows.jpeg', width=Cm(6.5), height=Cm(4.1))
-    document.add_picture('PieChart.jpeg', width=Cm(6.5), height=Cm(4.1))
-    document.add_picture('View_day.jpeg', width=Cm(6.5), height=Cm(4.1))
+    # document.add_picture('views_by_month.jpeg', width=Cm(6.5), height=Cm(4.1))
+    document.add_picture('heatmap.jpeg', width=Cm(8.5), height=Cm(6.5))
+    document.add_picture('PieChart.jpeg', width=Cm(8.5), height=Cm(6.5))
+    document.add_picture('10shows.jpeg', width=Cm(8.5), height=Cm(6.5))
+    document.add_picture('View_day.jpeg', width=Cm(7.5), height=Cm(6.5))
 
     document.save('Netflix_Analysis.docx')
 
@@ -220,14 +249,16 @@ def create_doc():
 if __name__ == '__main__':
 
     requirements()
-    
+
     df, Count = data_cleaning()
 
     Netflix_time(df)
     left(df)
 
+    # months(df)
     views_by_day(df)
     ten(df)
+    heat_map(df)
     create_pie(Count)
 
     create_doc()
