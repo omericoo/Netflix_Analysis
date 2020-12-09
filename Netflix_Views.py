@@ -28,7 +28,7 @@ def data_cleaning():
     df = load()
     # Substituting Part and Volume in Season.
     PaVo = re.compile(r'Part|Volume')
-    df['Title'] = [PaVo.sub('Season', t) for t in df['Title']]
+    df['Title'] = [PaVo.sub('Season', str(t).strip("\'")) for t in df['Title']]
 
     # Removing all movies and specials shows from the table
     # checks whether there is a mention for season
